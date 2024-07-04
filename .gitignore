@@ -1,0 +1,8 @@
+# Ignorar directorios __pycache__
+__pycache__/
+
+# Ignorar archivos .pyc
+*.pyc
+
+# Ignorar directorios de entornos virtuales, ajustar si se usa un nombre diferente para el entorno
+env/
