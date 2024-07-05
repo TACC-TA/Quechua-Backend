@@ -104,29 +104,27 @@ async def translate(request: TranslationRequest):
 async def obtenertitulo():
     return webscrappingrecetas()
 
-@app.get("/web/buscar")
+@app.post("/web/buscar")
 async def obtenerReceta(receipt:ReceiptRequest):
     receipe = buscarreceta(receipt.sentence)
     texto_concatenado = ""
     for _ in receipe:
         texto_concatenado += _ + " "
-    
-    print(texto_concatenado)    
+        
+    print(texto_concatenado)
     url = "https://l34fzzlj-8000.brs.devtunnels.ms/translate/"
         # Construye la URL completa con el parámetro de consulta
     full_url = f"{url}?text={texto_concatenado}"
     response = requests.get(full_url)
-        
-        # Verifica si la respuesta fue exitosa y es tipo JSON antes de decodificar
+    
     if response.status_code == 200 and 'application/json' in response.headers.get('Content-Type', ''):
         try:
             respuesta = response.json()
+            return {"translate": respuesta}
         except ValueError:
-            # Maneja el caso donde la respuesta no puede ser decodificada como JSON
             print("La respuesta no es un JSON válido.")
     else:
-        # Maneja el caso de respuestas no exitosas o no JSON
         print(f"Error en la solicitud: Código de estado {response.status_code}, Tipo de contenido {response.headers.get('Content-Type')}")
     
-    return {"translate": respuesta}
+    return {"translate": "Respuesta no disponible, error 500"}
 
