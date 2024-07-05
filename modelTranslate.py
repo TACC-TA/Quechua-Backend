@@ -128,6 +128,5 @@ async def obtenerReceta(receipt:ReceiptRequest):
         # Maneja el caso de respuestas no exitosas o no JSON
         print(f"Error en la solicitud: Código de estado {response.status_code}, Tipo de contenido {response.headers.get('Content-Type')}")
     
-    return respuesta
-        
+    return {"translate": respuesta}
 
