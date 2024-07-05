@@ -30,11 +30,19 @@ model_name = 'hackathon-pln-es/t5-small-finetuned-spanish-to-quechua'
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
+
+import requests
+
+url = "https://l34fzzlj-8000.brs.devtunnels.ms/"
+
+
 class TranslationRequest(BaseModel):
     sentence: str
 
 class ReceiptRequest(BaseModel):
     sentence: str
+
+
 def webscrappingrecetas():
     driver = webdriver.Chrome()
     driver.get('https://www.recetasnestle.com.pe')
@@ -81,10 +89,16 @@ def buscarreceta(receta):
 @app.post("/translate/")
 async def translate(request: TranslationRequest):
     sentence = request.sentence
-    input = tokenizer(sentence, return_tensors="pt")
-    output = model.generate(input["input_ids"], max_length=40, num_beams=4, early_stopping=True)
-    translated_sentence = tokenizer.decode(output[0], skip_special_tokens=True)
-    return {"translate": translated_sentence}
+    url = "https://l34fzzlj-8000.brs.devtunnels.ms/translate/"
+    # Construye la URL completa con el parámetro de consulta
+    full_url = f"{url}?text={sentence}"
+
+# Realiza una solicitud GET al endpoint
+    response = requests.get(full_url)
+    
+    print(response.json()) 
+    
+    return {"translate": "hola"}
 
 @app.get("/web/titulo")
 async def obtenertitulo():
@@ -92,4 +106,28 @@ async def obtenertitulo():
 
 @app.get("/web/buscar")
 async def obtenerReceta(receipt:ReceiptRequest):
-    return buscarreceta(receipt.sentence)
+    receipe = buscarreceta(receipt.sentence)
+    texto_concatenado = ""
+    for _ in receipe:
+        texto_concatenado += _ + " "
+    
+    print(texto_concatenado)    
+    url = "https://l34fzzlj-8000.brs.devtunnels.ms/translate/"
+        # Construye la URL completa con el parámetro de consulta
+    full_url = f"{url}?text={texto_concatenado}"
+    response = requests.get(full_url)
+        
+        # Verifica si la respuesta fue exitosa y es tipo JSON antes de decodificar
+    if response.status_code == 200 and 'application/json' in response.headers.get('Content-Type', ''):
+        try:
+            respuesta = response.json()
+        except ValueError:
+            # Maneja el caso donde la respuesta no puede ser decodificada como JSON
+            print("La respuesta no es un JSON válido.")
+    else:
+        # Maneja el caso de respuestas no exitosas o no JSON
+        print(f"Error en la solicitud: Código de estado {response.status_code}, Tipo de contenido {response.headers.get('Content-Type')}")
+    
+    return respuesta
+        
+
